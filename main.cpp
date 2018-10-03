@@ -11,7 +11,10 @@ public:
 	template<class U>
 	void push(U&& val)
 	{
-		static_assert(std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>, "push must accept forwarding reference on convertable to std::decay<T>");
+		static_assert(
+			std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>,
+			"push must accept forwarding reference on convertable to std::decay<T>"
+		);
 		std::unique_lock lk(m_m);
 		m_queue.push(std::forward<T>(val));
 		lk.unlock();
@@ -49,29 +52,26 @@ int main()
 				auto val = q.pull();
 				std::lock_guard lck(m);
 				std::cout << "'" << val
-				<< "'\t was read    by \t"
-				<< std::this_thread::get_id() << '\n'; 
-			}
-		}
-	);
-	std::thread write(
-		[&q=int_queue, &m=stream_mutext]
-		{
-			std::srand(std::time(0));
-			for (size_t i = 0; i != 10; ++i)
-			{
-				auto val = std::rand() % std::numeric_limits<int>::max();
-				q.push(val); 
-				std::lock_guard lck(m);
-				std::cout << "'" << val
-				<< "'\t was written by \t"
+				<< "'\twas read    by\t"
 				<< std::this_thread::get_id() << '\n'; 
 			}
 		}
 	);
 
+	auto &&q = int_queue;
+	auto &&m = stream_mutext;
+	std::srand(std::time(0));
+	for (size_t i = 0; i != 10; ++i)
+	{
+		auto val = std::rand();
+		q.push(val); 
+		std::lock_guard lck(m);
+		std::cout << "'" << val
+			<< "'\twas written by\t"
+			<< std::this_thread::get_id() << '\n'; 
+	}
+
 	read.join();
-	write.join();
 
 	return 0;
 }
