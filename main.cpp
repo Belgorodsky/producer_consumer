@@ -13,10 +13,10 @@ public:
 	{
 		static_assert(
 			std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>,
-			"push must accept forwarding reference on convertable to std::decay<T>"
+			"the push must accept a forwarding reference to convertable to std::decay<T>"
 		);
 		std::unique_lock lk(m_m);
-		m_queue.push(std::forward<T>(val));
+		m_queue.push(std::forward<U>(val));
 		lk.unlock();
 		m_cv.notify_one();
 	}
